@@ -1,4 +1,4 @@
-import { Payload } from './../../../generated/prisma/internal/prismaNamespace';
+import { Payload, PostWhereInput } from './../../../generated/prisma/internal/prismaNamespace';
 import { Post } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
@@ -11,13 +11,51 @@ const createPost = async (data: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'a
     })
     return result;
 }
-const getAllPosts = async (payload: {search?: string | undefined}) => {
+const getAllPosts = async ({search, tags,isFeatured}:
+     {search?: string | undefined,
+      tags?: string[] |[],
+        isFeatured?: boolean| undefined
+}) => {
+
+    const andConditions:PostWhereInput[] = [];
+    if (search) {
+        andConditions.push({
+            OR: [   
+                {
+                    title: {
+                        contains: search as string, 
+                        mode: 'insensitive'
+                    }
+                },
+                {
+                    content: {
+                        contains: search as string,
+                        mode: 'insensitive'
+                    }
+                },
+                { tags:{
+                    has: search as string
+                }}
+            ]
+        });
+    }
+    if(tags && tags.length>0){
+        andConditions.push({
+            tags:{  
+                hasEvery: tags as string[]
+            }
+        });
+    }
+    if(isFeatured){
+        andConditions.push({
+            isFeatured: isFeatured
+        });
+    }
     const Allposts = await prisma.post.findMany({
         where: {
-            title: {
-                contains: payload.search as string ,
-                mode: 'insensitive'
-            }
+          AND: 
+            andConditions
+          
         }
     });
     return Allposts;
