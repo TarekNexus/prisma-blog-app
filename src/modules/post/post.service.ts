@@ -1,3 +1,4 @@
+import { Payload } from './../../../generated/prisma/internal/prismaNamespace';
 import { Post } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
@@ -10,8 +11,15 @@ const createPost = async (data: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'a
     })
     return result;
 }
-const getAllPosts = async () => {
-    const Allposts = await prisma.post.findMany();
+const getAllPosts = async (payload: {search?: string | undefined}) => {
+    const Allposts = await prisma.post.findMany({
+        where: {
+            title: {
+                contains: payload.search as string ,
+                mode: 'insensitive'
+            }
+        }
+    });
     return Allposts;
 }
 
