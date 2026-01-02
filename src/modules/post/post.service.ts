@@ -1,5 +1,5 @@
 import { Payload, PostWhereInput } from './../../../generated/prisma/internal/prismaNamespace';
-import { Post } from "../../../generated/prisma/client";
+import { Post, PostStatus } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 const createPost = async (data: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'authorId'>, userId: string) => {
@@ -11,10 +11,12 @@ const createPost = async (data: Omit<Post, 'id' | 'createdAt' | 'updatedAt' | 'a
     })
     return result;
 }
-const getAllPosts = async ({search, tags,isFeatured}:
+const getAllPosts = async ({search, tags,isFeatured,status,authorId}:
      {search?: string | undefined,
       tags?: string[] |[],
-        isFeatured?: boolean| undefined
+        isFeatured?: boolean| undefined,
+        status?: PostStatus,
+        authorId?: string| undefined
 }) => {
 
     const andConditions:PostWhereInput[] = [];
@@ -49,6 +51,16 @@ const getAllPosts = async ({search, tags,isFeatured}:
     if(isFeatured){
         andConditions.push({
             isFeatured: isFeatured
+        });
+    }
+    if(status){
+        andConditions.push({
+            status: status
+        });
+    }
+    if(authorId){
+        andConditions.push({
+            authorId: authorId
         });
     }
     const Allposts = await prisma.post.findMany({
