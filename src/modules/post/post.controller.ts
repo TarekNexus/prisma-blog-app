@@ -1,3 +1,4 @@
+import { SortOrder } from "./../../../generated/prisma/internal/prismaNamespace";
 import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { Post, PostStatus } from "../../../generated/prisma/client";
@@ -38,9 +39,9 @@ const getAllPosts = async (req: Request, res: Response) => {
 
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 10);
-    const skip=(page-1)*limit
-
-
+    const skip = (page - 1) * limit;
+    const sortBy = req.query.sortBy as string | undefined;
+    const sortOrder = req.query.SortOrder as string | undefined;
 
     const result = await postService.getAllPosts({
       search: searchString,
@@ -50,7 +51,9 @@ const getAllPosts = async (req: Request, res: Response) => {
       authorId,
       page,
       limit,
-      skip
+      skip,
+      sortBy,
+      sortOrder,
     });
     res.status(200).json(result);
   } catch (e) {
